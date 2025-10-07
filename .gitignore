@@ -1,0 +1,20 @@
+# ignore all tex files and LaTeX generated files
+*.tex
+*.aux
+*.log
+*.out
+*.pdf
+*.synctex.gz
+*.toc
+*.bcf
+*.run.xml
+*.fls
+*.fdb_latexmk
+*.bbl
+*.blg
+*.idx
+*.ind
+*.ilg
+*.lot
+*.lof
+
