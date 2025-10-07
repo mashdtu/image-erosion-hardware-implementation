@@ -1,28 +1,32 @@
-# Introduction
+# Assignment 2 for the course 02132 Computer Systems
+
+Hardware implementation in Chisel of a small CPU running the image erosion.
+
+## Introduction
 
 
 
-# Install & run
+## Install & run
 
 
 
-# Problem
+## Problem
 
 
 
-# Design
+## Design
 
 
 
-# Implementation
+## Implementation
 
 
 
-# Test and evaluation
+## Test and evaluation
 
 
 
-# Dependencies
+## Dependencies
 
 - Java OpenJDK 8 or later (up to 17)
 - sbt
@@ -34,6 +38,6 @@
 
 
 
-# References
+## References
 
 
