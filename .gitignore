@@ -1,4 +1,5 @@
-# ignore all tex files and LaTeX generated files
+# ignore all LaTeX project files
+src
 *.tex
 *.aux
 *.log
@@ -17,6 +18,3 @@
 *.ilg
 *.lot
 *.lof
-
-# ignore the latex src folder 
-src
