@@ -18,3 +18,5 @@
 *.lot
 *.lof
 
+# ignore the latex src folder 
+src
