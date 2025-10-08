@@ -1,5 +1,5 @@
 # ignore all LaTeX project files
-src
+tex
 *.tex
 *.aux
 *.log
@@ -18,3 +18,9 @@ src
 *.ilg
 *.lot
 *.lof
+
+# ignore sbt files
+.bsp
+project
+target
+test_run_dir
