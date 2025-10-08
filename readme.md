@@ -29,9 +29,7 @@ Assignment 2 for the course 02132 Computer Systems
 ## Dependencies
 
 - Java OpenJDK 8 or later (up to 17)
-- sbt
-- IntelliJ
-- Surfer or GTKWave
+- sbt (Chisel)
 
 
 
