@@ -25,9 +25,6 @@ project
 target
 test_run_dir
 
-# ignore c code
-*.c
-
 # ignore env settings
 .vscode
 .metals
