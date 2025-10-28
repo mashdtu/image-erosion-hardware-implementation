@@ -28,8 +28,19 @@ class CPUTop extends Module {
   val alu = Module(new ALU())
 
   //Connecting the modules
-  //programCounter.io.run := io.run
-  //programMemory.io.address := programCounter.io.programCounter
+  programCounter.io.run := io.run
+  programMemory.io.address := programCounter.io.programCounter
+
+  // Basic connections to prevent VOID errors
+  programCounter.io.stop := false.B
+  programCounter.io.jump := false.B
+  programCounter.io.programCounterJump := 0.U(16.W)
+  
+  dataMemory.io.address := 0.U(16.W)
+  dataMemory.io.dataWrite := 0.U(32.W)
+  dataMemory.io.writeEnable := false.B
+  
+  io.done := false.B
 
   ////////////////////////////////////////////
   //Continue here with your connections
