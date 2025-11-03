@@ -1,4 +1,3 @@
-setup:
     addiu   $s0,        $zero,      0x0             # Define first pixel address (0)
     j       main_loop                               # Jump to main_loop (skip make_black and increment)
 
@@ -16,7 +15,7 @@ main_loop:
     beq     $s0,        $t0,        end             # If pixel is not in 0 - 399, jump to end
 
     lw      $s1,        0x0($s0)                    # Load the new pixel colour
-    beq     $s1,        $zero,      increment       # If pixel is black, jump to increment
+    beq     $s1,        $zero,      make_black      # If pixel is black, jump to make_black
 
     addiu   $s2,        $zero,      0x13            # Set register $s2 to 0x13 = 19 
     slt     $t0,        $s2,        $s0             # Compare border and pixel values with slt
@@ -63,5 +62,6 @@ mod_loop:
 
 end:
     nop
+    j       end
 
 
