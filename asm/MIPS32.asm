@@ -60,5 +60,3 @@ mod_loop:
 end:
     nop
     j       end
-
-
