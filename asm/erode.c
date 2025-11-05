@@ -49,3 +49,11 @@ void erode (unsigned char binary_image[BMP_WIDTH][BMP_HEIGTH], unsigned char bmp
         }
     }
 }
+
+int main(int argc, char const *argv[])
+{
+    unsigned char binary_image[BMP_WIDTH][BMP_HEIGTH];
+    unsigned char bmp_image[BMP_WIDTH][BMP_HEIGTH][BMP_CHANNELS];
+    erode(binary_image, bmp_image);
+    return 0;
+}
