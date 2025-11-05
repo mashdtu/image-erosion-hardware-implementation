@@ -25,6 +25,9 @@ project
 target
 test_run_dir
 
+# ignore exe file
+*exe
+
 # ignore env settings
 .vscode
 .metals
