@@ -30,6 +30,7 @@ Assignment 2 for the course 02132 Computer Systems
 
 - Java OpenJDK 8 or later (up to 17)
 - Chisel / scala (sbt)
+- GTKWave
 
 
 
