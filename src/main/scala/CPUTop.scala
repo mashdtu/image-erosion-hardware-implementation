@@ -27,24 +27,62 @@ class CPUTop extends Module {
   val controlUnit = Module(new ControlUnit())
   val alu = Module(new ALU())
 
-  //Connecting the modules
+  //Connecting the modules according to the diagram
+  
+  // Instruction fetch - PC to Program Memory
   programCounter.io.run := io.run
   programMemory.io.address := programCounter.io.programCounter
-
-  // Basic connections to prevent VOID errors
-  programCounter.io.stop := false.B
-  programCounter.io.jump := false.B
-  programCounter.io.programCounterJump := 0.U(16.W)
+  val instruction = programMemory.io.instructionRead
   
-  dataMemory.io.address := 0.U(16.W)
-  dataMemory.io.dataWrite := 0.U(32.W)
-  dataMemory.io.writeEnable := false.B
+  // Control Unit - decode instruction and generate control signals
+  controlUnit.io.instruction := instruction
+  controlUnit.io.aluZero := alu.io.zero
   
-  io.done := false.B
-
-  ////////////////////////////////////////////
-  //Continue here with your connections
-  ////////////////////////////////////////////
+  // Extract instruction fields
+  val rs = instruction(25, 21)      // Read register 1 - bits [25-21]
+  val rt = instruction(20, 16)      // Read register 2 - bits [20-16]  
+  val rd = instruction(15, 11)      // Write register - bits [15-11]
+  val immediate = instruction(15, 0) // Immediate value - bits [15-0]
+  
+  // Register File connections - FIXED for STORE instruction
+  registerFile.io.readRegister1 := rt(4, 0)  // SWAPPED: rt goes to readRegister1 (data)
+  registerFile.io.readRegister2 := rs(4, 0)  // SWAPPED: rs goes to readRegister2 (address)
+  registerFile.io.ctrl_RegWrite := controlUnit.io.regWrite
+  
+  // RegDst MUX - Select write register (0=rt, 1=rd)
+  val writeRegister = Mux(controlUnit.io.regDst, rd(4, 0), rt(4, 0))
+  registerFile.io.writeRegister := writeRegister
+  
+  // ALU connections - FIXED for STORE instruction
+  alu.io.inputA := registerFile.io.readData2  // SWAPPED: address comes from readData2 (rs)
+  
+  // ALUSrc MUX - Select ALU input B (0=register, 1=immediate)
+  val signExtendedImmediate = Cat(Fill(16, immediate(15)), immediate) // Sign extend
+  alu.io.inputB := Mux(controlUnit.io.aluSrc, signExtendedImmediate, registerFile.io.readData1)
+  alu.io.ALUOp := controlUnit.io.aluOp
+  
+  // Data Memory connections
+  dataMemory.io.address := alu.io.result(15, 0)  // ALU result as address
+  dataMemory.io.dataWrite := registerFile.io.readData1  // FIXED: data comes from readData1 (rt)
+  dataMemory.io.writeEnable := controlUnit.io.memWrite
+  
+  // MemToReg MUX - Select register write data (0=ALU result, 1=memory data)  
+  val writeData = Mux(controlUnit.io.memToReg, dataMemory.io.dataRead, alu.io.result)
+  registerFile.io.writeData := writeData
+  
+  // Program Counter control - exactly as shown in diagram
+  programCounter.io.stop := controlUnit.io.halt
+  programCounter.io.jump := controlUnit.io.jump
+  programCounter.io.programCounterJump := immediate  // Jump address from instruction
+  
+  // Branch control - FIXED: Use absolute addressing
+  val pcPlusOne = programCounter.io.programCounter + 1.U
+  val branchTarget = immediate  // FIXED: Use immediate as absolute address, not relative offset
+  programCounter.io.branch := controlUnit.io.branch
+  programCounter.io.branchAddress := branchTarget
+  
+  // CPU done signal - END instruction sets this
+  io.done := controlUnit.io.halt
 
   //This signals are used by the tester for loading the program to the program memory, do not touch
   programMemory.io.testerAddress := io.testerProgMemAddress

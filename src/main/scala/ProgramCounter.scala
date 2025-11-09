@@ -8,6 +8,10 @@ class ProgramCounter extends Module {
     val run = Input(Bool())
     val programCounterJump = Input(UInt(16.W))
     val programCounter = Output(UInt(16.W))
+    
+    // Add branch support
+    val branch = Input(Bool())
+    val branchAddress = Input(UInt(16.W))
   })
   
   // Program counter register initialized to 0
@@ -25,6 +29,9 @@ class ProgramCounter extends Module {
   }.elsewhen(io.jump) {
     // When jump is asserted, jump to specified address
     programCounterNext := io.programCounterJump
+  }.elsewhen(io.branch) {
+    // When branch is asserted, branch to specified address
+    programCounterNext := io.branchAddress
   }.otherwise {
     // Otherwise increment by 1
     programCounterNext := programCounterReg + 1.U
