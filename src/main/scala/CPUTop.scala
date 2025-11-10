@@ -44,7 +44,7 @@ class CPUTop extends Module {
   val rd = instruction(15, 11)      // Write register - bits [15-11]
   val immediate = instruction(15, 0) // Immediate value - bits [15-0]
   
-  // Register File connections - FIXED for STORE instruction
+  // Register File connections
   registerFile.io.readRegister1 := rt(4, 0)  // SWAPPED: rt goes to readRegister1 (data)
   registerFile.io.readRegister2 := rs(4, 0)  // SWAPPED: rs goes to readRegister2 (address)
   registerFile.io.ctrl_RegWrite := controlUnit.io.regWrite
@@ -53,8 +53,8 @@ class CPUTop extends Module {
   val writeRegister = Mux(controlUnit.io.regDst, rd(4, 0), rt(4, 0))
   registerFile.io.writeRegister := writeRegister
   
-  // ALU connections - FIXED for STORE instruction
-  alu.io.inputA := registerFile.io.readData2  // SWAPPED: address comes from readData2 (rs)
+  // ALU connections
+  alu.io.inputA := registerFile.io.readData2
   
   // ALUSrc MUX - Select ALU input B (0=register, 1=immediate)
   val signExtendedImmediate = Cat(Fill(16, immediate(15)), immediate) // Sign extend
@@ -70,14 +70,14 @@ class CPUTop extends Module {
   val writeData = Mux(controlUnit.io.memToReg, dataMemory.io.dataRead, alu.io.result)
   registerFile.io.writeData := writeData
   
-  // Program Counter control - exactly as shown in diagram
+  // Program Counter control
   programCounter.io.stop := controlUnit.io.halt
   programCounter.io.jump := controlUnit.io.jump
   programCounter.io.programCounterJump := immediate  // Jump address from instruction
   
-  // Branch control - FIXED: Use absolute addressing
+  // Branch control
   val pcPlusOne = programCounter.io.programCounter + 1.U
-  val branchTarget = immediate  // FIXED: Use immediate as absolute address, not relative offset
+  val branchTarget = immediate
   programCounter.io.branch := controlUnit.io.branch
   programCounter.io.branchAddress := branchTarget
   
