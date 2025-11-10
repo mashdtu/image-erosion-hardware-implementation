@@ -107,7 +107,7 @@ def create_truncated_normal_distribution(minimum, average, maximum, x):
     
     return y
 
-def plot_distribution(minimum, average, maximum, num_points=1000, distribution_type='beta', samples=None):
+def plot_distribution(minimum, average, maximum, num_points=1000, distribution_type='beta'):
     # Generate x values for plotting
     x_range = maximum - minimum
     x_start = minimum - 0.1 * x_range  # Extend slightly beyond the range
@@ -130,12 +130,7 @@ def plot_distribution(minimum, average, maximum, num_points=1000, distribution_t
         dist_type = f"Normal Distribution (μ={mean:.2f}, σ={std_dev:.2f})"
     
     # Create the plot
-    plt.figure(figsize=(12, 7))
-    
-    # Add histogram if samples are provided
-    if samples is not None:
-        plt.hist(samples, bins=50, density=True, alpha=0.6, color='skyblue', 
-                label='Example Histogram', edgecolor='white', linewidth=0.5)
+    plt.figure(figsize=(10, 6))
     
     # Plot the theoretical distribution
     plt.plot(x, y, 'b-', linewidth=3, label=dist_type)
@@ -174,6 +169,12 @@ def plot_distribution(minimum, average, maximum, num_points=1000, distribution_t
     # Formatting
     plt.xlabel('Value')
     plt.ylabel('Probability Density')
+    plt.title('Distribution from Three Points with 97% Confidence Interval')
+    
+    # Explicitly cut off the graph at y=0
+    current_ylim = plt.ylim()
+    plt.ylim(0, current_ylim[1])
+    
     plt.legend()
     plt.grid(True, alpha=0.3)
     plt.tight_layout()
@@ -277,5 +278,5 @@ if __name__ == "__main__":
     print(f"\nEmpirical 97% CI from samples:")
     print(f"Sample CI: [{sample_ci_lower:.2f}, {sample_ci_upper:.2f}]")
     
-    # Plot the distribution with histogram included
-    x, y = plot_distribution(min_val, avg_val, max_val, distribution_type='beta', samples=samples)
+    # Plot the distribution
+    x, y = plot_distribution(min_val, avg_val, max_val, distribution_type='beta')
