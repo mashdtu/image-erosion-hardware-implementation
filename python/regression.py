@@ -2,16 +2,15 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
 
-# Given data points
-x = np.array([25, 100, 225, 400])
-y = np.array([69, 394, 1095, 2489])
+# Define data points
+x = np.array([5, 10, 15, 20])
+y = np.array([91, 441, 1041, 1891])
+#x = np.array([10, 15, 20])
+#y = np.array([1493, 3678, 6903])
 
 # Define model functions
 def linear(x, m, c):
     return m * x + c
-
-def quadratic(x, a, b, c):
-    return a * x**2 + b * x + c
 
 def exponential(x, a, b):
     return a * np.exp(b * x)
@@ -28,7 +27,6 @@ def compute_r_squared(y_true, y_pred):
 
 # Fit models
 lin_params, _ = curve_fit(linear, x, y)
-quad_params, _ = curve_fit(quadratic, x, y)
 exp_params, _ = curve_fit(exponential, x, y, p0=(1, 0.01), maxfev=10000)
 pow_params, _ = curve_fit(power_law, x, y)
 
@@ -37,31 +35,26 @@ x_smooth = np.linspace(min(x), max(x), 500)
 
 # Compute fitted curves
 y_lin = linear(x_smooth, *lin_params)
-y_quad = quadratic(x_smooth, *quad_params)
 y_exp = exponential(x_smooth, *exp_params)
 y_pow = power_law(x_smooth, *pow_params)
 
 # Predictions on original x
 y_lin_pred = linear(x, *lin_params)
-y_quad_pred = quadratic(x, *quad_params)
 y_exp_pred = exponential(x, *exp_params)
 y_pow_pred = power_law(x, *pow_params)
 
-# R² values
+# R^2 values
 r2_lin = compute_r_squared(y, y_lin_pred)
-r2_quad = compute_r_squared(y, y_quad_pred)
 r2_exp = compute_r_squared(y, y_exp_pred)
 r2_pow = compute_r_squared(y, y_pow_pred)
 
 # Print R^2 values
 print(f"Linear R²: {r2_lin:.10f}")
-print(f"Quadratic R²: {r2_quad:.10f}")
 print(f"Exponential R²: {r2_exp:.10f}")
 print(f"Power-Law R²: {r2_pow:.10f}")
 
 # Format labels with equations and R^2
 lin_label = f"Linear (R² = {r2_lin:.6f})\ny = {lin_params[0]:.2f}x + {lin_params[1]:.2f}"
-quad_label = f"Quadratic (R² = {r2_quad:.6f})\ny = {quad_params[0]:.2e}x² + {quad_params[1]:.2e}x + {quad_params[2]:.2e}"
 exp_label = f"Exponential (R² = {r2_exp:.6f})\ny = {exp_params[0]:.2e}·e^({exp_params[1]:.2e}x)"
 pow_label = f"Power-Law (R² = {r2_pow:.6f})\ny = {pow_params[0]:.2e}·x^{pow_params[1]:.2f}"
 
@@ -70,7 +63,6 @@ pow_label = f"Power-Law (R² = {r2_pow:.6f})\ny = {pow_params[0]:.2e}·x^{pow_pa
 plt.figure(figsize=(10, 6))
 plt.scatter(x, y, color='red', label='Data Points', zorder=5)
 plt.plot(x_smooth, y_lin, label=lin_label)
-plt.plot(x_smooth, y_quad, label=quad_label)
 plt.plot(x_smooth, y_exp, label=exp_label)
 plt.plot(x_smooth, y_pow, label=pow_label)
 

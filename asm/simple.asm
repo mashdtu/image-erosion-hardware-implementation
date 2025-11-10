@@ -1,6 +1,6 @@
 ADDI $r1, $r0, 255      ; r1 = constant 255
 ADDI $r7, $r0, 20       ; r7 = constant 20
-ADDI $r6, $r0, 760      ; r6 = 400 - 20 - 19
+ADDI $r6, $r0, 760      ; r6 = 400 + 400 - 20 - 20
 ADDI $r2, $r0, 21       ; skip top border
 ADDI $r3, $r0, 379      ; skip bottom border
 BEQ $r2, $r3, 26        ; jump to end if inside border
