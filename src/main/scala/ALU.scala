@@ -33,8 +33,8 @@ class ALU extends Module {
     is(1.U) {         // SUB
       aluResult := io.inputA - io.inputB
     }
-    is(2.U) {         // LESS THAN OR EQ (for BGE)
-      aluResult := Mux(io.inputA.asSInt <= io.inputB.asSInt, 1.U, 0.U)
+    is(2.U) {         // GREATER THAN OR EQ (for BGE)
+      aluResult := Mux(io.inputA.asSInt >= io.inputB.asSInt, 1.U, 0.U)
     }
     is(3.U) {         // EQUAL (for BEQ)
       aluResult := Mux(io.inputA === io.inputB, 1.U, 0.U)

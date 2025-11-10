@@ -1,51 +1,32 @@
-ADDI    $r1,    $r0,    0           # 1. Define first pixel address (0)
-JUMP    6                           # 2. Jump to instruction 7 (main_loop)
-
-ADD     $r6,    $r1,    $r0         # 3. Copy pixel register in temporary $r6 register
-ADDI    $r6,    $r6,    400         # 4. Add 400 to the current pixel (copy to output image)
-STORE   $r0,    $r6                 # 5. Make the current pixel black in the output image
-
-ADDI    $r1,    $r1,    1           # 6. Increment pixel memory address to next pixel
-
-ADDI    $r6,    $r0,    399         # 7. Set temporary register $r6 to 0x18F = 399
-BEQ     $r1,    $r6,    40          # 8. If pixel is not in 0 - 399, jump to instruction 41 (end)
-
-LOAD    $r2,    $r1                 # 9. Load the new pixel colour
-BEQ     $r2,    $r0,    2           # 10. If pixel is black, jump to instruction 3 (make_black)
-
-ADDI    $r6,    $r0,    19          # 11. Set register $r3 to 19 
-BGE     $r6,    $r3,    2           # 12. If pixel is on top border, jump to instruction 3 (make_black)
-ADDI    $r3,    $r0,    379         # 13. Set register $r3 to 379
-BGE     $r3,    $r6,    2           # 14. If pixel is on top border, jump to instruction 3 (make_black)
-
-ADD     $r4,    $r1,    $r0         # 15. Copy pixel index
-SUBI    $r4,    $r4,    20          # 16. Subtract 20 (0x14) from remainder
-BGE     $r4,    $r0,    15          # 17. If still >= 0, keep looping
-ADDI    $r4,    $r4,    20          # 18. If below 0, add 20 back -> remainder
-BEQ     $r4,    $r0,    2           # 19. If pixel is on left border, jump to instruction 3 (make_black)
-ADDI    $r3,    $r0,    19          # 20. Set register $r3 to 0x14 = 19        
-BEQ     $r4,    $r3,    2           # 21. If pixel is on right border, jump to instruction 3 (make_black)
-
-ADD     $r5,    $r1,    $r0         # 22. Define another pixel
-SUBI    $r5,    $r5,    1           # 23. Select pixel to the left
-LOAD    $r2,    $r5                 # 24. If left pixel is black, make current black and skip to next
-BEQ     $r2,    $r0,    2           # 25. 
-ADDI    $r5,    $r5,    2           # 26. Select pixel to the right
-LOAD    $r2,    $r5                 # 27. If right pixel is black, make current black and skip to next
-BEQ     $r2,    $r0,    2           # 28.
-SUBI    $r5,    $r5,    1           # 29. Select pixel above
-SUBI    $r5,    $r5,    20          # 30. If above pixel is black, make current black and skip to next
-LOAD    $r2,    $r5                 # 31.
-BEQ     $r2,    $r0,    2           # 32.
-ADDI    $r5,    $r5,    40          # 33. Select pixel below
-LOAD    $r2,    $r5                 # 34. If below pixel is black, make current black and skip to next
-BEQ     $r2,    $r0,    2           # 35. 
-                                    # If all neighbour pixels are white, make current white
-ADD     $r6,    $r1,    $r0         # 36. Copy pixel register in a temporary $r6 register
-ADDI    $r6,    $r6,    400         # 37. Add 400 to the current pixel (copy to output image)
-ADDI    $r7,    $r0,    1           # 38. Define colour of the pixel (white)
-STORE   $r7,    $r6                 # 39. Make the current pixel white in the output image
-
-JUMP    5                           # 40. Jump back to instruction 6 (increment)
-
-END                                 # 41. End/halt program
+ADDI $r1, $r0, 255      ; r1 = constant 255
+ADDI $r5, $r0, 20       ; r5 = constant 20
+ADDI $r2, $r0, 21       ; skip top border
+ADDI $r3, $r0, 379      ; skip bottom border
+BEQ $r2, $r3, 31        ; jump to end if inside border
+LOAD $r4, 0($r2)        ; load pixel colour as r4
+BEQ $r4, $r0, 29        ; jump to increment if black
+SUBI $r5, $r2, 20       ; set r5 to pixel above
+LOAD $r4, 0($r5)        ; load above pixel colour as r4
+BEQ $r4, $r0, 29        ; jump to increment if black
+ADDI $r5, $r2, 20       ; set r5 to pixel below
+LOAD $r4, 0($r5)        ; load below pixel colour as r4
+BEQ $r4, $r0, 29        ; jump to increment if black
+SUBI $r5, $r2, 1        ; set r5 to pixel left
+LOAD $r4, 0($r5)        ; load left pixel colour as r4
+BEQ $r4, $r0, 29        ; jump to increment if black
+ADDI $r5, $r2, 1        ; set r5 to pixel right
+LOAD $r4, 0($r5)        ; load right pixel colour as r4
+BEQ $r4, $r0, 29        ; jump to increment if black
+SUBI $r4, $r2, 0
+SUBI $r4, $r4, 20
+BEQ $r4, $r0, 29        ; skip if inside left border
+ADDI $r6, $r0, 19
+BEQ $r4, $r6, 29        ; skip if inside right border
+BGE $r4, $r5, 20        ; jump back if still above 20
+ADDI $r2, $r2, 400
+STORE $r1, 0($r2)
+SUBI $r2, $r2, 399      ; stored value at address r2 and incremented by 1.
+JUMP 4
+ADDI $r2, $r2, 1        ; increment by 1
+JUMP 4
+END
