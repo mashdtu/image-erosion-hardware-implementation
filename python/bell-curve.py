@@ -1,0 +1,240 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy import stats
+
+def create_beta_distribution(minimum, average, maximum):
+    # Normalize the average to [0, 1] range
+    range_val = maximum - minimum
+    normalized_mean = (average - minimum) / range_val
+    
+    # For beta distribution, mean = alpha / (alpha + beta)
+    # Assume a moderate variance that gives a nice bell shape
+    # Variance for beta = (alpha * beta) / ((alpha + beta)^2 * (alpha + beta + 1))
+    
+    center_deviation = abs(normalized_mean - 0.5)
+    
+    if center_deviation < 0.1:  # Close to center - more symmetric
+        # For symmetric-ish case
+        alpha = beta = 3.0  # This gives a nice bell shape
+        # Adjust based on actual mean
+        if normalized_mean > 0.5:
+            alpha = 3.0 + (normalized_mean - 0.5) * 4
+            beta = 3.0
+        else:
+            alpha = 3.0
+            beta = 3.0 + (0.5 - normalized_mean) * 4
+    else:
+        # More skewed case
+        if normalized_mean < 0.5:
+            # Skewed right (peak on left)
+            alpha = 2.0
+            beta = 2.0 / normalized_mean - 2.0
+        else:
+            # Skewed left (peak on right)
+            beta = 2.0
+            alpha = 2.0 / (1 - normalized_mean) - 2.0
+    
+    # Ensure parameters are positive
+    alpha = max(alpha, 0.5)
+    beta = max(beta, 0.5)
+    
+    # Scale and location parameters to map [0,1] to [minimum, maximum]
+    loc = minimum
+    scale = range_val
+    
+    return alpha, beta, loc, scale
+
+def create_normal_distribution(minimum, average, maximum):
+    # Use the average as the mean
+    mean = average
+
+    dist_to_min = abs(mean - minimum)
+    dist_to_max = abs(mean - maximum)
+    max_distance = max(dist_to_min, dist_to_max)
+    
+    # Set standard deviation so that the furthest point is ~4 sigma away
+    std_dev = max_distance / 4.0
+    
+    return mean, std_dev
+
+def create_truncated_normal_distribution(minimum, average, maximum, x):
+    mean, std_dev = create_normal_distribution(minimum, average, maximum)
+    
+    # Create normal distribution
+    y = stats.norm.pdf(x, mean, std_dev)
+    
+    # Truncate: set to 0 outside [minimum, maximum]
+    y = np.where((x >= minimum) & (x <= maximum), y, 0)
+    
+    # Normalize so the area under the curve is 1
+    if np.trapezoid(y, x) > 0:
+        y = y / np.trapezoid(y, x)
+    
+    return y
+
+def plot_distribution(minimum, average, maximum, num_points=1000, distribution_type='beta'):
+    # Generate x values for plotting
+    x_range = maximum - minimum
+    x_start = minimum - 0.1 * x_range  # Extend slightly beyond the range
+    x_end = maximum + 0.1 * x_range
+    x = np.linspace(x_start, x_end, num_points)
+    
+    # Generate distribution based on type
+    if distribution_type == 'beta':
+        alpha, beta_param, loc, scale = create_beta_distribution(minimum, average, maximum)
+        y = stats.beta.pdf(x, alpha, beta_param, loc=loc, scale=scale)
+        # Set values outside [minimum, maximum] to 0
+        y = np.where((x >= minimum) & (x <= maximum), y, 0)
+        dist_type = f"Beta Distribution (α={alpha:.2f}, β={beta_param:.2f})"
+    elif distribution_type == 'truncated':
+        y = create_truncated_normal_distribution(minimum, average, maximum, x)
+        dist_type = "Truncated Normal"
+    else:  # normal
+        mean, std_dev = create_normal_distribution(minimum, average, maximum)
+        y = stats.norm.pdf(x, mean, std_dev)
+        dist_type = f"Normal Distribution (μ={mean:.2f}, σ={std_dev:.2f})"
+    
+    # Create the plot
+    plt.figure(figsize=(10, 6))
+    plt.plot(x, y, 'b-', linewidth=2, label=dist_type)
+    
+    # Mark the three input points
+    plt.axvline(minimum, color='red', linestyle='--', alpha=0.7, label=f'Minimum: {minimum}')
+    plt.axvline(average, color='green', linestyle='--', alpha=0.7, label=f'Average: {average}')
+    plt.axvline(maximum, color='red', linestyle='--', alpha=0.7, label=f'Maximum: {maximum}')
+    
+    # Add markers for the three points on the curve
+    # Find the y-values at the input points
+    min_idx = np.argmin(np.abs(x - minimum))
+    avg_idx = np.argmin(np.abs(x - average))
+    max_idx = np.argmin(np.abs(x - maximum))
+    
+    min_y = y[min_idx] if min_idx < len(y) else 0
+    avg_y = y[avg_idx] if avg_idx < len(y) else 0
+    max_y = y[max_idx] if max_idx < len(y) else 0
+    
+    plt.plot(minimum, min_y, 'ro', markersize=8, label='Min point')
+    plt.plot(average, avg_y, 'go', markersize=8, label='Avg point')
+    plt.plot(maximum, max_y, 'ro', markersize=8, label='Max point')
+    
+    # Formatting
+    plt.xlabel('Value')
+    plt.ylabel('Probability Density')
+    plt.legend()
+    plt.grid(True, alpha=0.3)
+    plt.tight_layout()
+    
+    # Print statistics
+    print(f"Distribution Parameters:")
+    if distribution_type == 'beta':
+        alpha, beta_param, loc, scale = create_beta_distribution(minimum, average, maximum)
+        print(f"Alpha (α): {alpha:.4f}")
+        print(f"Beta (β): {beta_param:.4f}")
+        print(f"Location: {loc:.4f}")
+        print(f"Scale: {scale:.4f}")
+        # Calculate actual mean and std of the beta distribution
+        actual_mean = loc + scale * alpha / (alpha + beta_param)
+        actual_var = scale**2 * (alpha * beta_param) / ((alpha + beta_param)**2 * (alpha + beta_param + 1))
+        print(f"Actual Mean: {actual_mean:.4f}")
+        print(f"Actual Std: {np.sqrt(actual_var):.4f}")
+    else:
+        mean, std_dev = create_normal_distribution(minimum, average, maximum)
+        print(f"Mean (μ): {mean:.4f}")
+        print(f"Standard Deviation (σ): {std_dev:.4f}")
+    
+    print(f"\nInput Points:")
+    print(f"Minimum: {minimum}")
+    print(f"Average: {average}")
+    print(f"Maximum: {maximum}")
+    print(f"\nProbability densities at input points:")
+    print(f"P(X={minimum}): {min_y:.6f}")
+    print(f"P(X={average}): {avg_y:.6f}")
+    print(f"P(X={maximum}): {max_y:.6f}")
+    
+    plt.show()
+    
+    return x, y
+
+def generate_samples(minimum, average, maximum, num_samples=1000, distribution_type='beta'):
+    if distribution_type == 'beta':
+        alpha, beta_param, loc, scale = create_beta_distribution(minimum, average, maximum)
+        samples = stats.beta.rvs(alpha, beta_param, loc=loc, scale=scale, size=num_samples)
+    else:
+        mean, std_dev = create_normal_distribution(minimum, average, maximum)
+        samples = np.random.normal(mean, std_dev, num_samples)
+        if distribution_type == 'truncated':
+            # Keep only samples within bounds
+            samples = samples[(samples >= minimum) & (samples <= maximum)]
+            # If we dont have enough samples, generate more
+            while len(samples) < num_samples:
+                additional = np.random.normal(mean, std_dev, num_samples - len(samples))
+                valid_additional = additional[(additional >= minimum) & (additional <= maximum)]
+                samples = np.concatenate([samples, valid_additional])
+            samples = samples[:num_samples]  # Trim to exact size
+    
+    return samples
+
+if __name__ == "__main__":
+    min_val = 4507741
+    avg_val = 6845310
+    max_val = 17116113
+    
+    print("Creating normal distribution from three points:")
+    print(f"Minimum: {min_val}")
+    print(f"Average: {avg_val}")
+    print(f"Maximum: {max_val}")
+    print("-" * 40)
+    
+    # Plot the distribution (using beta by default for natural 0 at min/max)
+    x, y = plot_distribution(min_val, avg_val, max_val, distribution_type='beta')
+    
+    # Generate some sample data
+    print(f"\nGenerating 1000 random samples...")
+    samples = generate_samples(min_val, avg_val, max_val, 1000, distribution_type='beta')
+    print(f"Sample statistics:")
+    print(f"Sample mean: {np.mean(samples):.4f}")
+    print(f"Sample std: {np.std(samples, ddof=1):.4f}")
+    print(f"Sample min: {np.min(samples):.4f}")
+    print(f"Sample max: {np.max(samples):.4f}")
+    
+    # Plot histogram of samples
+    plt.figure(figsize=(10, 6))
+    plt.hist(samples, bins=50, density=True, alpha=0.7, color='skyblue', label='Example histogram')
+    plt.plot(x, y, 'r-', linewidth=2, label='Theoretical distribution')
+    plt.axvline(min_val, color='red', linestyle='--', alpha=0.7, label=f'Original Min: {min_val}')
+    plt.axvline(avg_val, color='green', linestyle='--', alpha=0.7, label=f'Original Avg: {avg_val}')
+    plt.axvline(max_val, color='red', linestyle='--', alpha=0.7, label=f'Original Max: {max_val}')
+    plt.xlabel('Value')
+    plt.ylabel('Density')
+    plt.legend()
+    plt.grid(True, alpha=0.3)
+    plt.tight_layout()
+    plt.show()
+    
+    # Also show comparison of different distribution types
+    print(f"\n" + "="*50)
+    print("COMPARISON OF DIFFERENT DISTRIBUTION TYPES:")
+    print("="*50)
+    
+    plt.figure(figsize=(12, 8))
+    
+    # Beta distribution
+    x_beta, y_beta = plot_distribution(min_val, avg_val, max_val, distribution_type='beta')
+    plt.subplot(2, 2, 1)
+    plt.plot(x_beta, y_beta, 'b-', linewidth=2, label='Beta Distribution')
+    plt.axvline(min_val, color='red', linestyle='--', alpha=0.5)
+    plt.axvline(avg_val, color='green', linestyle='--', alpha=0.5)
+    plt.axvline(max_val, color='red', linestyle='--', alpha=0.5)
+    plt.title('Beta Distribution (Natural 0 at boundaries)')
+    plt.xlabel('Value')
+    plt.ylabel('Density')
+    plt.grid(True, alpha=0.3)
+    
+    # Show the density at min/max for beta
+    min_idx_beta = np.argmin(np.abs(x_beta - min_val))
+    max_idx_beta = np.argmin(np.abs(x_beta - max_val))
+    print(f"Beta Distribution - Density at min: {y_beta[min_idx_beta]:.8f}")
+    print(f"Beta Distribution - Density at max: {y_beta[max_idx_beta]:.8f}")
+    
+    plt.tight_layout()
+    plt.show()
