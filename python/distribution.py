@@ -142,16 +142,16 @@ def plot_distribution(minimum, average, maximum, num_points=1000, distribution_t
     plt.plot(average, avg_y, 'go', markersize=8)
     plt.plot(maximum, max_y, 'ro', markersize=8)
     
-    # Calculate and show 97% confidence interval
-    ci_lower, ci_upper = calculate_confidence_interval(minimum, average, maximum, 0.97, distribution_type)
-    plt.axvline(ci_lower, color='orange', linestyle=':', alpha=0.8, linewidth=2, label=f'97% CI Lower: {ci_lower:.1f}')
-    plt.axvline(ci_upper, color='orange', linestyle=':', alpha=0.8, linewidth=2, label=f'97% CI Upper: {ci_upper:.1f}')
+    # Calculate and show 95% confidence interval
+    ci_lower, ci_upper = calculate_confidence_interval(minimum, average, maximum, 0.95, distribution_type)
+    plt.axvline(ci_lower, color='orange', linestyle=':', alpha=0.8, linewidth=2, label=f'95% CI Lower: {ci_lower:.1f}')
+    plt.axvline(ci_upper, color='orange', linestyle=':', alpha=0.8, linewidth=2, label=f'95% CI Upper: {ci_upper:.1f}')
     
     # Fill the area between the confidence interval bounds
     x_ci = x[(x >= ci_lower) & (x <= ci_upper)]
     y_ci = y[(x >= ci_lower) & (x <= ci_upper)]
     if len(x_ci) > 0:
-        plt.fill_between(x_ci, y_ci, alpha=0.2, color='orange', label='97% Confidence Interval')
+        plt.fill_between(x_ci, y_ci, alpha=0.2, color='orange', label='95% Confidence Interval')
     
     # Formatting
     plt.xlabel('Clock Cycles')
@@ -193,16 +193,16 @@ def plot_distribution(minimum, average, maximum, num_points=1000, distribution_t
     print(f"P(X={maximum}): {max_y:.6f}")
     
     # Calculate and print confidence intervals
-    ci_lower, ci_upper = calculate_confidence_interval(minimum, average, maximum, 0.97, distribution_type)
+    ci_lower, ci_upper = calculate_confidence_interval(minimum, average, maximum, 0.95, distribution_type)
     ci_width = ci_upper - ci_lower
     ci_center = (ci_lower + ci_upper) / 2
     
-    print(f"\n97% Confidence Interval:")
+    print(f"\n95% Confidence Interval:")
     print(f"Lower bound: {ci_lower:.2f}")
     print(f"Upper bound: {ci_upper:.2f}")
     print(f"Interval width: {ci_width:.2f}")
     print(f"Interval center: {ci_center:.2f}")
-    print(f"97% of the probability mass lies between {ci_lower:.2f} and {ci_upper:.2f}")
+    print(f"95% of the probability mass lies between {ci_lower:.2f} and {ci_upper:.2f}")
     
     # Also calculate other common intervals
     ci_90_lower, ci_90_upper = calculate_confidence_interval(minimum, average, maximum, 0.90, distribution_type)
@@ -211,8 +211,9 @@ def plot_distribution(minimum, average, maximum, num_points=1000, distribution_t
     
     print(f"\nOther Confidence Intervals:")
     print(f"90% CI: [{ci_90_lower:.2f}, {ci_90_upper:.2f}] (width: {ci_90_upper-ci_90_lower:.2f})")
-    print(f"95% CI: [{ci_95_lower:.2f}, {ci_95_upper:.2f}] (width: {ci_95_upper-ci_95_lower:.2f})")
-    print(f"97% CI: [{ci_lower:.2f}, {ci_upper:.2f}] (width: {ci_width:.2f})")
+    print(f"95% CI: [{ci_lower:.2f}, {ci_upper:.2f}] (width: {ci_width:.2f})")
+    ci_97_lower, ci_97_upper = calculate_confidence_interval(minimum, average, maximum, 0.97, distribution_type)
+    print(f"97% CI: [{ci_97_lower:.2f}, {ci_97_upper:.2f}] (width: {ci_97_upper-ci_97_lower:.2f})")
     print(f"99% CI: [{ci_99_lower:.2f}, {ci_99_upper:.2f}] (width: {ci_99_upper-ci_99_lower:.2f})")
     
     plt.show()
@@ -258,10 +259,10 @@ if __name__ == "__main__":
     print(f"Sample min: {np.min(samples):.4f}")
     print(f"Sample max: {np.max(samples):.4f}")
     
-    # Calculate empirical 97% confidence interval from samples
-    sample_ci_lower = np.percentile(samples, 1.5)  # 1.5th percentile for 97% CI
-    sample_ci_upper = np.percentile(samples, 98.5)  # 98.5th percentile for 97% CI
-    print(f"\nEmpirical 97% CI from samples:")
+    # Calculate empirical 95% confidence interval from samples
+    sample_ci_lower = np.percentile(samples, 2.5)  # 2.5th percentile for 95% CI
+    sample_ci_upper = np.percentile(samples, 97.5)  # 97.5th percentile for 95% CI
+    print(f"\nEmpirical 95% CI from samples:")
     print(f"Sample CI: [{sample_ci_lower:.2f}, {sample_ci_upper:.2f}]")
     
     # Plot the distribution
