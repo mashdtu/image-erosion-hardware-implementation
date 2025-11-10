@@ -58,19 +58,6 @@ def create_normal_distribution(minimum, average, maximum):
     return mean, std_dev
 
 def calculate_confidence_interval(minimum, average, maximum, confidence_level=0.97, distribution_type='beta'):
-    """
-    Calculate the confidence interval for the distribution.
-    
-    Parameters:
-    minimum (float): The minimum value
-    average (float): The average/mean value  
-    maximum (float): The maximum value
-    confidence_level (float): Confidence level (e.g., 0.97 for 97%)
-    distribution_type (str): 'beta', 'normal', or 'truncated'
-    
-    Returns:
-    tuple: (lower_bound, upper_bound) of the confidence interval
-    """
     alpha_level = (1 - confidence_level) / 2  # For two-tailed interval
     
     if distribution_type == 'beta':
@@ -167,7 +154,7 @@ def plot_distribution(minimum, average, maximum, num_points=1000, distribution_t
         plt.fill_between(x_ci, y_ci, alpha=0.2, color='orange', label='97% Confidence Interval')
     
     # Formatting
-    plt.xlabel('Value')
+    plt.xlabel('Clock Cycles')
     plt.ylabel('Probability Density')
     plt.title('Distribution from Three Points with 97% Confidence Interval')
     
