@@ -156,7 +156,6 @@ def plot_distribution(minimum, average, maximum, num_points=1000, distribution_t
     # Formatting
     plt.xlabel('Clock Cycles')
     plt.ylabel('Probability Density')
-    plt.title('Distribution from Three Points with 97% Confidence Interval')
     
     # Explicitly cut off the graph at y=0
     current_ylim = plt.ylim()
