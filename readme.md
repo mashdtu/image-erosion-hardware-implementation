@@ -1,5 +1,4 @@
 ## todo:
-- Make erosion algorithm ignore pixels on vertical borders
 - Remove unused instructions
 - Remove R-types because not used
 - Write report
