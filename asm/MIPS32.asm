@@ -1,62 +1,39 @@
-    addi    $s0,        $zero,      0x0             # Define first pixel address (0)
-    j       main_loop                               # Jump to main_loop (skip make_black and increment)
-
-make_black:                                         # Make pixel black
-    add     $t0,        $s0,        $zero           # Copy pixel register in temporary $t0 register
-    addi    $t0,        $t0,        0x190           # Add 400 to the current pixel (copy to output image)
-    sw      $zero,      0x0($t0)                    # Make the current pixel black in the output image
-
-increment:
-    addi    $s0,        $s0,        0x1             # Increment pixel memory address to next pixel
+addiu   $s1,    $zero,  255             # s1 = constant 255
+addiu   $s7,    $zero,  20              # s7 = constant 20
+addiu   $s6,    $zero,  760             # s6 = constant 400 + 400 - 20 - 20
+addiu   $s2,    $zero,  21              # skip top border
+addiu   $s3,    $zero,  379             # skip bottom border
 
 main_loop:
-    addi    $t0,        $zero,      0x190           # Set temporary register $t0 to 0x18F = 399
-    beq     $s0,        $t0,        end             # If pixel is not in 0 - 399, jump to end
+beq     $s2,    $s3,    end             # jump to end if inside border
+lw      $s4,    0($s2)                  # load pixel colour as s4
+beq     $s4,    $zero,  increment       # jump to increment if black
+addiu   $s5,    $s2,    -20             # set s5 to pixel above
+lw      $s4,    0($s5)                  # load above pixel colour as s4
+beq     $s4,    $zero,  increment       # jump to increment if black
+addiu   $s5,    $s2,    20              # set s5 to pixel below
+lw      $s4,    0($s5)                  # load below pixel colour as s4
+beq     $s4,    $zero,  increment       # jump to increment if black
+addiu   $s5,    $s2,    -1              # set s5 to pixel left
+lw      $s4,    0($s5)                  # load left pixel colour as s4
+beq     $s4,    $zero,  increment       # jump to increment if black
+addiu   $s5,    $s2,    1               # set s5 to pixel right
+lw      $s4,    0($s5)                  # load right pixel colour as s4
+beq     $s4,    $zero,  increment       # jump to increment if black
+addiu   $s2,    $s2,    400
+sw      $s1,    0($s2)
+addiu   $s2,    $s2,    -399            # store value at address s2 and increment by 1.
+j       main_loop
 
-    lw      $s1,        0x0($s0)                    # Load the new pixel colour
-    beq     $s1,        $zero,      make_black      # If pixel is black, jump to make_black
-
-    addi    $t0,        $zero,      0x13            # Set register $s2 to 0x13 = 19 
-    bge     $t0,        $s2,        make_black      # If pixel is on top border, jump to make_black
-    addi    $s2,        $zero,      0x17B           # Set register $s2 to 0x17B = 379
-    bge     $s2,        $t0,        make_black      # If pixel is on top border, jump to make_black
-
-    add     $s3,        $s0,        $zero           # Copy pixel index
-mod_loop:
-    subi    $s3,        $s3,        0x14            # Subtract 20 (0x14) from remainder
-    bge     $s3,        $zero,      mod_loop        # If still >= 0, keep looping
-    addi    $s3,        $s3,        0x14            # If below 0, add 20 back -> remainder
-
-    beq     $s3,        $zero,      make_black      # If pixel is on left border, jump to make_black
-    addi    $s2,        $zero,      0x13            # Set register $s2 to 0x14 = 19        
-    beq     $s3,        $s2,        make_black      # If pixel is on right border, jump to make_black
-
-    add     $s4,        $s0,        $zero           # Define another pixel
-    subi    $s4,        $s4,        0x1             # Select pixel to the left
-    lw      $s1,        0x0($s4)
-    beq     $s1,        $zero,      make_black      # If left pixel is black, make current black and skip to next
-
-    addi    $s4,        $s4,        0x2             # Select pixel to the right
-    lw      $s1,        0x0($s4)
-    beq     $s1,        $zero,      make_black      # If right pixel is black, make current black and skip to next
-
-    subi    $s4,        $s4,        0x1             # Select pixel above
-    subi    $s4,        $s4,        0x14
-    lw      $s1,        0x0($s4)
-    beq     $s1,        $zero,      make_black      # If above pixel is black, make current black and skip to next
-
-    addi    $s4,        $s4,        0x28            # Select pixel below
-    lw      $s1,        0x0($s4)
-    beq     $s1,        $zero,      make_black      # If above pixel is black, make current black and skip to next
-                                                    # If all neighbour pixels are white, make current white
-    add     $t0,        $s0,        $zero           # Copy pixel register in a temporary $t0 register
-    addi    $t0,        $t0,        0x190           # Add 400 to the current pixel (copy to output image)
-    sll     $t0,        $t0,        0x2             # Multiply by 4 bytes (32 bits) as we store in 32 bit slots
-    addi    $t1,        $zero       0x1             # Define colour of the pixel (white)
-    sw      $t1,        0x0($t0)                    # Make the current pixel white in the output image
-
-    j       increment                               # Jump to increment
+increment:
+addiu   $s2,    $s2,    1               # increment by 1
+j       main_loop
 
 end:
-    nop
-    j       end
+addiu   $s1,    $zero,  400             # set all vertical corners to black
+addiu   $s1,    $s1,    19
+sw      $zero,  0($s1)                  # make left side black
+addiu   $s1,    $s1,    1
+sw      $zero,  0($s1)                  # make right side black
+bge     $s6,    $s1,    27
+nop
