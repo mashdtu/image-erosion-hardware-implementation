@@ -21,11 +21,11 @@ class CPUTopTester extends AnyFlatSpec with ChiselScalatestTester {
         //var image = Images.blackImage
         //var image = Images.whiteImage
         //var image = Images.cellsImage
-        //var image = Images.borderCellsImage
+        var image = Images.borderCellsImage
         //var image = Images.braid5x5
         //var image = Images.braid10x10
         //var image = Images.braid15x15
-        var image = Images.braid20x20
+        //var image = Images.braid20x20
         for (address <- 0 to image.length - 1) {
           dut.io.testerDataMemEnable.poke(true.B)
           dut.io.testerDataMemWriteEnable.poke(true.B)
@@ -56,14 +56,14 @@ class CPUTopTester extends AnyFlatSpec with ChiselScalatestTester {
         dut.io.run.poke(true.B)
         var running = true
         var maxInstructions = 20000
-        var instructionsCounter = maxInstructions
+        var instructionsCounter = 0
         while (running) {
-          System.out.print("\rRunning cycle: " + (maxInstructions - instructionsCounter))
           dut.clock.step(1)
-          instructionsCounter = instructionsCounter - 1
-          running = dut.io.done.peekBoolean() == false && instructionsCounter > 0
+          instructionsCounter += 1
+          running = dut.io.done.peekBoolean() == false && instructionsCounter < maxInstructions
         }
         dut.io.run.poke(false.B)
+        System.out.println("Clock cycles: " + instructionsCounter)
         System.out.println(" - Done!")
 
         //Dump the data memory content

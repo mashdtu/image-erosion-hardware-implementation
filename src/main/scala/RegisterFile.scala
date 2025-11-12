@@ -33,6 +33,5 @@ class RegisterFile extends Module {
   // Cannot write to register 0 ($r0)
   when(io.ctrl_RegWrite && (io.writeRegister =/= 0.U)) {
     registers(io.writeRegister) := io.writeData
-    printf("Register %d written with value: %d\n", io.writeRegister, io.writeData)
   }
 }
