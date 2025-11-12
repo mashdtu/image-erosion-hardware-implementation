@@ -24,10 +24,10 @@ SUBI $r2, $r2, 399      # store value at address r2 and increment by 1.
 JUMP 5
 ADDI $r2, $r2, 1        # increment by 1
 JUMP 5
-ADDI $r1, $r0, 400      # set all vertical corners to black
-ADDI $r1, $r1, 14
-STORE $r0, 0($r1)       # make left side black
-ADDI $r1, $r1, 1
-STORE $r0, 0($r1)       # make right side black
-BGE $r6, $r1, 27
+ADDI $r2, $r0, 400      # set vertical borders to black
+ADDI $r2, $r2, 14
+STORE $r0, 0($r2)       # make left side black
+ADDI $r2, $r2, 1
+STORE $r0, 0($r2)       # make right side black
+BGE $r6, $r2, 27
 END
