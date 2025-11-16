@@ -14,7 +14,7 @@ class ControlUnit extends Module {
     val branch = Output(Bool())             // Branch - Branch signal
     val memRead = Output(Bool())            // MemRead - Memory read enable
     val memToReg = Output(Bool())           // MemToReg - Select write data source
-    val aluOp = Output(UInt(2.W))           // ALUOp - ALU operation select (2-bit)
+    val aluOp = Output(UInt(2.W))           // ALUOp - ALU operation select
     val memWrite = Output(Bool())           // MemWrite - Memory write enable
     val aluSrc = Output(Bool())             // ALUSrc - Select ALU input B source
     val regWrite = Output(Bool())           // RegWrite - Register write enable
@@ -24,33 +24,17 @@ class ControlUnit extends Module {
     val aluZero = Input(Bool())
   })
 
-  //Implement this module here
+  val opcode = io.instruction(31, 26)
   
-  // Extract instruction fields based on assignment format
-  val opcode = io.instruction(31, 26)     // Bits 31-26: Opcode (6 bits)
-  val rd = io.instruction(25, 21)         // Bits 25-21: Destination register (5 bits) - R-type
-  val rs1 = io.instruction(20, 16)        // Bits 20-16: Source register 1 (5 bits) - R-type
-  val rs2 = io.instruction(15, 11)        // Bits 15-11: Source register 2 (5 bits) - R-type
-  val shamt = io.instruction(10, 6)       // Bits 10-6: Shift amount (5 bits) - R-type
-  
-  // I-type fields
-  val rs = io.instruction(25, 21)         // Bits 25-21: Source register (5 bits) - I-type
-  val rt = io.instruction(20, 16)         // Bits 20-16: Target register (5 bits) - I-type  
-  val immediate = io.instruction(15, 0)   // Bits 15-0: Immediate value (16 bits) - I-type
-  
-  // J-type fields
-  val address = io.instruction(15, 0)     // Bits 15-0: Target address (16 bits) - J-type
-  
-  // Assignment 2 Instruction Opcodes (matching assembler)
-  val OP_END     = "b000000".U  // END - Terminate execution
-  val OP_ADD     = "b010000".U  // ADD - R-type
-  val OP_LOAD    = "b100000".U  // LOAD - I-type
-  val OP_STORE   = "b100001".U  // STORE - I-type
-  val OP_ADDI    = "b100010".U  // ADDI - I-type
-  val OP_SUBI    = "b100011".U  // SUBI - I-type
-  val OP_BEQ     = "b100100".U  // BEQ - I-type
-  val OP_BGE     = "b100101".U  // BGE (Branch Greater or Equal) - I-type
-  val OP_JUMP    = "b110000".U  // JUMP (Unconditional) - J-type
+  // Define opcodes
+  val OP_LOAD   = "b100000".U   // LOAD
+  val OP_STORE  = "b100001".U   // STORE
+  val OP_ADDI   = "b100010".U   // ADDI
+  val OP_SUBI   = "b100011".U   // SUBI
+  val OP_BEQ    = "b100100".U   // BEQ
+  val OP_BGE    = "b100101".U   // BGE
+  val OP_JUMP   = "b110000".U   // JUMP
+  val OP_END    = "b000000".U   // END
   
   // Default control signals
   io.regDst := false.B
@@ -64,116 +48,101 @@ class ControlUnit extends Module {
   io.regWrite := false.B
   io.halt := false.B
   
-  // Main control logic based on opcode - matching diagram exactly
+  // Set control signals
   switch(opcode) {
     is(OP_END) {
-      // END - Terminate execution
+      // END
       io.halt := true.B
-      // All other signals remain at default (false)
-    }
-    
-    is(OP_ADD) {
-      // ADD - R-type (rd = rs1 + rs2)
-      io.regDst := true.B        // 1: Write to rd register (R-type)
-      io.jump := false.B         // 0: No jump
-      io.branch := false.B       // 0: No branch
-      io.memRead := false.B      // 0: No memory read
-      io.memToReg := false.B     // 0: Write ALU result to register
-      io.aluOp := 0.U(2.W)       // 00: ADD operation
-      io.memWrite := false.B     // 0: No memory write
-      io.aluSrc := false.B       // 0: Use register for ALU input B
-      io.regWrite := true.B      // 1: Enable register write
-    }
-    
+    }    
     is(OP_LOAD) {
-      // LOAD - I-type (rt = memory[rs + immediate])
-      io.regDst := false.B       // 0: Write to rt register (I-type)
-      io.jump := false.B         // 0: No jump
-      io.branch := false.B       // 0: No branch
-      io.memRead := true.B       // 1: Memory read
-      io.memToReg := true.B      // 1: Write memory data to register
-      io.aluOp := 0.U(2.W)       // 00: ADD for address calculation
-      io.memWrite := false.B     // 0: No memory write
-      io.aluSrc := true.B        // 1: Use immediate for address calculation
-      io.regWrite := true.B      // 1: Enable register write
+      // LOAD
+      io.regDst := false.B       // write to rt register
+      io.jump := false.B         // no jump
+      io.branch := false.B       // no branch
+      io.memRead := true.B       // memory read
+      io.memToReg := true.B      // write memory data to register
+      io.aluOp := 0.U(2.W)       // ADD for address calculation
+      io.memWrite := false.B     // no memory write
+      io.aluSrc := true.B        // use immediate for address calculation
+      io.regWrite := true.B      // enable register write
     }
     
     is(OP_STORE) {
-      // STORE - I-type (memory[rs + immediate] = rt)
-      io.regDst := false.B       // 0: Don't care (no register write)
-      io.jump := false.B         // 0: No jump
-      io.branch := false.B       // 0: No branch
-      io.memRead := false.B      // 0: No memory read
-      io.memToReg := false.B     // 0: Don't care (no register write)
-      io.aluOp := 0.U(2.W)       // 00: ADD for address calculation
-      io.memWrite := true.B      // 1: Memory write
-      io.aluSrc := true.B        // 1: Use immediate for address calculation
-      io.regWrite := false.B     // 0: No register write
+      // STORE
+      io.regDst := false.B       // no register write
+      io.jump := false.B         // no jump
+      io.branch := false.B       // no branch
+      io.memRead := false.B      // no memory read
+      io.memToReg := false.B     // no register write
+      io.aluOp := 0.U(2.W)       // ADD for address calculation
+      io.memWrite := true.B      // memory write
+      io.aluSrc := true.B        // use immediate for address calculation
+      io.regWrite := false.B     // no register write
     }
     
     is(OP_ADDI) {
-      // ADDI - I-type (rt = rs + immediate)
-      io.regDst := false.B       // 0: Write to rt register (I-type)
-      io.jump := false.B         // 0: No jump
-      io.branch := false.B       // 0: No branch
-      io.memRead := false.B      // 0: No memory read
-      io.memToReg := false.B     // 0: Write ALU result to register
-      io.aluOp := 0.U(2.W)       // 00: ADD operation
-      io.memWrite := false.B     // 0: No memory write
-      io.aluSrc := true.B        // 1: Use immediate value
-      io.regWrite := true.B      // 1: Enable register write
+      // ADDI
+      io.regDst := false.B       // write to rt register
+      io.jump := false.B         // no jump
+      io.branch := false.B       // no branch
+      io.memRead := false.B      // no memory read
+      io.memToReg := false.B     // write ALU result to register
+      io.aluOp := 0.U(2.W)       // ADD operation
+      io.memWrite := false.B     // no memory write
+      io.aluSrc := true.B        // use immediate value
+      io.regWrite := true.B      // enable register write
     }
     
     is(OP_SUBI) {
-      // SUBI - I-type (rt = rs - immediate)
-      io.regDst := false.B       // 0: Write to rt register (I-type)
-      io.jump := false.B         // 0: No jump
-      io.branch := false.B       // 0: No branch
-      io.memRead := false.B      // 0: No memory read
-      io.memToReg := false.B     // 0: Write ALU result to register
-      io.aluOp := 1.U(2.W)       // 01: SUB operation
-      io.memWrite := false.B     // 0: No memory write
-      io.aluSrc := true.B        // 1: Use immediate value
-      io.regWrite := true.B      // 1: Enable register write
+      // SUBI
+      io.regDst := false.B       // write to rt register
+      io.jump := false.B         // no jump
+      io.branch := false.B       // no branch
+      io.memRead := false.B      // no memory read
+      io.memToReg := false.B     // write ALU result to register
+      io.aluOp := 1.U(2.W)       // SUB operation
+      io.memWrite := false.B     // no memory write
+      io.aluSrc := true.B        // use immediate value
+      io.regWrite := true.B      // enable register write
     }
     
     is(OP_BEQ) {
-      // BEQ - I-type (if rs == rt then branch)
-      io.regDst := false.B       // 0: Don't care (no register write)
-      io.jump := false.B         // 0: No jump
-      io.branch := io.aluZero    // Branch if ALU result is zero (equal)
-      io.memRead := false.B      // 0: No memory read
-      io.memToReg := false.B     // 0: Don't care (no register write)
-      io.aluOp := 1.U(2.W)       // 01: SUB for comparison
-      io.memWrite := false.B     // 0: No memory write
-      io.aluSrc := false.B       // 0: Compare two registers
-      io.regWrite := false.B     // 0: No register write
+      // BEQ
+      io.regDst := false.B       // no register write
+      io.jump := false.B         // no jump
+      io.branch := true.B        // branch is true
+      io.memRead := false.B      // no memory read
+      io.memToReg := false.B     // no register write
+      io.aluOp := 3.U(2.W)       // BEQ for comparison
+      io.memWrite := false.B     // no memory write
+      io.aluSrc := false.B       // compare two registers
+      io.regWrite := false.B     // no register write
     }
     
     is(OP_BGE) {
-      // BGE - I-type (if rs >= rt then branch)
-      io.regDst := false.B       // 0: Don't care (no register write)
-      io.jump := false.B         // 0: No jump
-      io.branch := !io.aluZero   // Branch if ALU result is 1 (rs >= rt)
-      io.memRead := false.B      // 0: No memory read
-      io.memToReg := false.B     // 0: Don't care (no register write)
-      io.aluOp := 2.U(2.W)       // 10: Less than or equal comparison (rs <= rt)
-      io.memWrite := false.B     // 0: No memory write
-      io.aluSrc := false.B       // 0: Compare two registers
-      io.regWrite := false.B     // 0: No register write
+      // BGE
+      io.regDst := false.B       // no register write
+      io.jump := false.B         // no jump
+      io.branch := true.B        // branch is true
+      io.memRead := false.B      // no memory read
+      io.memToReg := false.B     // no register write
+      io.aluOp := 2.U(2.W)       // less than or equal comparison (rs <= rt)
+      io.memWrite := false.B     // no memory write
+      io.aluSrc := false.B       // compare two registers
+      io.regWrite := false.B     // no register write
     }
     
     is(OP_JUMP) {
-      // JUMP - J-type (unconditional jump)
-      io.regDst := false.B       // 0: Don't care (no register write)
-      io.jump := true.B          // 1: Unconditional jump
-      io.branch := false.B       // 0: No conditional branch
-      io.memRead := false.B      // 0: No memory read
-      io.memToReg := false.B     // 0: Don't care (no register write)
-      io.aluOp := 0.U(2.W)       // 00: Don't care
-      io.memWrite := false.B     // 0: No memory write
-      io.aluSrc := false.B       // 0: Don't care
-      io.regWrite := false.B     // 0: No register write
+      // JUMP
+      io.regDst := false.B       // no register write
+      io.jump := true.B          // unconditional jump
+      io.branch := false.B       // not conditional branch
+      io.memRead := false.B      // no memory read
+      io.memToReg := false.B     // no register write
+      io.aluOp := 0.U(2.W)       // no ALU
+      io.memWrite := false.B     // no memory write
+      io.aluSrc := false.B       // no ALU
+      io.regWrite := false.B     // no register write
     }
   }
 

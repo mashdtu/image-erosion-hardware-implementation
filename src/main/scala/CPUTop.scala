@@ -78,7 +78,8 @@ class CPUTop extends Module {
   // Branch control
   val pcPlusOne = programCounter.io.programCounter + 1.U
   val branchTarget = immediate
-  programCounter.io.branch := controlUnit.io.branch
+  // Branch is true if both branch and Zero are true.
+  programCounter.io.branch := (controlUnit.io.branch & alu.io.zero)
   programCounter.io.branchAddress := branchTarget
   
   // CPU done signal - END instruction sets this
