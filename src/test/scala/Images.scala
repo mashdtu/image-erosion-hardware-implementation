@@ -98,7 +98,7 @@ object Images{
   )
 
   // 5x5 dotted pattern - simple dots scattered around
-  val braid5x5 = Array(
+  val img5x5 = Array(
       0,   0, 255,   0,   0,   // Row 0: single dot
       0,   0,   0,   0,   0,   // Row 1: empty
     255, 255,   0,   0, 255,   // Row 2: two small dots
@@ -128,7 +128,7 @@ object Images{
   )
 
   // 10x10 dotted pattern - mix of small and medium dots
-  val braid10x10 = Array(
+  val img10x10 = Array(
     255, 255,   0,   0,   0,   0, 255,   0,   0,   0,   // Row 0: 2x1 dot and single dot
     255, 255,   0,   0,   0,   0,   0,   0,   0,   0,   // Row 1: 2x1 dot
       0,   0,   0, 255, 255, 255,   0,   0,   0, 255,   // Row 2: 3x1 dot and single
@@ -158,7 +158,7 @@ object Images{
   )
 
   // 15x15 dotted pattern - mix of small, medium, and larger dots
-  val braid15x15 = Array(
+  val img15x15 = Array(
     255, 255, 255,   0,   0,   0, 255,   0,   0,   0,   0, 255, 255,   0,   0,   // Row 0: 3x1 and 2x1 dots
     255, 255, 255,   0,   0,   0,   0,   0,   0,   0,   0, 255, 255,   0,   0,   // Row 1: 3x1 and 2x1 dots
     255, 255, 255,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   // Row 2: 3x1 dot (3x3 block)
@@ -188,7 +188,7 @@ object Images{
   )
 
   // 20x20 dotted pattern - mix of various sized dots
-  val braid20x20 = Array(
+  val img20x20 = Array(
       255,  255,  255,  255,  255,  0,    0,    0,    0,    255,  255,  0,    0,    0,    0,    255,  0,    0,    0,    0,
       255,  255,  255,  255,  255,  0,    0,    0,    0,    255,  255,  0,    0,    0,    0,    0,    0,    0,    0,    0,
       255,  255,  255,  255,  255,  0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,

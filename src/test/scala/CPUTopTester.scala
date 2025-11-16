@@ -22,10 +22,10 @@ class CPUTopTester extends AnyFlatSpec with ChiselScalatestTester {
         //var image = Images.whiteImage
         var image = Images.cellsImage
         //var image = Images.borderCellsImage
-        //var image = Images.braid5x5
-        //var image = Images.braid10x10
-        //var image = Images.braid15x15
-        //var image = Images.braid20x20
+        //var image = Images.img5x5
+        //var image = Images.img10x10
+        //var image = Images.img15x15
+        //var image = Images.img20x20
         for (address <- 0 to image.length - 1) {
           dut.io.testerDataMemEnable.poke(true.B)
           dut.io.testerDataMemWriteEnable.poke(true.B)

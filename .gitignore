@@ -32,3 +32,6 @@ test_run_dir
 # ignore env settings
 .vscode
 .metals
+
+# ignore txt dumps
+*.txt
